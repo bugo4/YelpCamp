@@ -10,7 +10,7 @@
     <h1>Campgrounds List:</h1>
     <ul>
         <% for (const camp of campgrounds) { %>
-        <li><a href="/camps/<%= camp._id %>"><%= camp.title %></a> <a href="/camps/edit/<%= camp._id %>">(Edit)</a> </a></li>
+        <li><a href="/camps/<%= camp._id %>"><%= camp.title %></a></li>
         <% } %> 
     </ul>
 </body>
