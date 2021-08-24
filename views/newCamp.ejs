@@ -7,16 +7,16 @@
     <title>Create A New Camp </title>
 </head>
 <body>
-    <form action="/camps/edit/<%= camp._id %>?_method=PUT" method="post">
+    <form action="/camps" method="post">
         <div>
             <label for="title">Enter Title:</label>
-            <input type="text" id="title" name="title" value="<%= camp.title %> ">
+            <input type="text" id="title" name="title">
             <label for="price">Enter Price:</label>
-            <input type="text" id="price" name="price" value="<%= camp.price %>">
+            <input type="text" id="price" name="price">
             <label for="desc">Enter Description:</label>
-            <input type="text" id="desc" name="description" value="<%= camp.description %>">
+            <input type="text" id="desc" name="description">
             <label for="location">Enter Location:</label>
-            <input type="text" id="location" name="location" value="<%= camp.location %>">    
+            <input type="text" id="location" name="location">    
         </div>
         <button>Submit</button>
         

@@ -3,6 +3,7 @@ const ServerConfig = require("./server_config.json")
 const express = require("express")
 const app = express()
 const path = require("path")
+const methodOverride = require("method-override")
 
 const mongoose = require("mongoose")
 const CampGroundModel = require("./models/campground")
@@ -20,6 +21,7 @@ db.once("open", () => {
 })
 
 app.use(express.urlencoded({extended: true}))
+app.use(methodOverride("_method"))
 
 app.set('view engine', 'ejs')
 app.set('views', path.join(__dirname, 'views'))
@@ -43,7 +45,7 @@ app.get("/camps", async (req, res) => {
 // New
 // Create new camps page - get
 app.get("/camps/new", async (req, res) => {
-    res.render("editCamp")
+    res.render("newCamp")
 })
 // Create
 // Parse create new campground - post
@@ -54,12 +56,28 @@ app.post("/camps", async (req,res) => {
     await newCamp.save()
     res.redirect("/camps")
 })
+
 // Read
 // Get a specific camp - get
 app.get("/camps/:id", async (req, res) => {
     const {id} = req.params;
     const chosenCamp = await CampGroundModel.findById(id)
     res.render("showCamp", {camp: chosenCamp})
+})
+
+// Update & Edit
+// Edit
+// Get the edit form to update a camp
+app.get("/camps/edit/:id", async (req, res) => {
+    const {id} = req.params;
+    const editedCamp = await CampGroundModel.findById(id)
+    res.render("editCamp", {camp: editedCamp})
+})
+// Update
+app.put("/camps/edit/:id", async (req, res) => {
+    const {id} = req.params
+    const editedCamp = await CampGroundModel.findByIdAndUpdate(id, {... req.body})
+    res.redirect("/camps")
 })
 
 
