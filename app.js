@@ -35,6 +35,7 @@ app.get("/", (req, res) => {
 // Show all camps
 app.get("/camps", async (req, res) => {
     const camps = await CampGroundModel.find({})
+    console.log(camps)
     res.render('camps.ejs', {campgrounds: camps})
 })
 
@@ -52,6 +53,13 @@ app.post("/camps", async (req,res) => {
     const newCamp = new CampGroundModel({...req.body})
     await newCamp.save()
     res.redirect("/camps")
+})
+// Read
+// Get a specific camp - get
+app.get("/camps/:id", async (req, res) => {
+    const {id} = req.params;
+    const chosenCamp = await CampGroundModel.findById(id)
+    res.render("showCamp", {camp: chosenCamp})
 })
 
 
