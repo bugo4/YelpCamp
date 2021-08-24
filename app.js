@@ -81,6 +81,12 @@ app.put("/camps/edit/:id", async (req, res) => {
 })
 
 
+// Delete
+app.delete("/camps/:id", async (req, res) => {
+    const {id} = req.params
+    await CampGroundModel.findByIdAndDelete(id)
+    res.redirect("/camps")
+})
 
 
 // Just for testing - this route will be removed
