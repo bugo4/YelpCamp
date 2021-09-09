@@ -7,6 +7,7 @@ const methodOverride = require("method-override")
 
 const mongoose = require("mongoose")
 const CampGroundModel = require("./models/campground")
+const ReviewModel = require("./models/review")
 
 mongoose.connect(ServerConfig.mongodb.SERVER_URL, {
     useNewUrlParser: true,
@@ -61,8 +62,9 @@ app.post("/camps", async (req,res) => {
 // Get a specific camp - get
 app.get("/camps/:id", async (req, res) => {
     const {id} = req.params;
-    const chosenCamp = await CampGroundModel.findById(id)
-    res.render("showCamp", {camp: chosenCamp})
+    const chosenCamp = await CampGroundModel.findOne({_id: id}).populate("reviews")
+    console.log(chosenCamp)
+    res.render("showCamp", {camp: chosenCamp })
 })
 
 // Update & Edit
@@ -89,6 +91,23 @@ app.delete("/camps/:id", async (req, res) => {
 })
 
 
+/* Reviews CRUD */
+// Create
+app.post("/camps/:id/reviews", async (req, res) => {
+    if (req.body.review == undefined) return;
+    const ChosenReview = req.body.review
+    console.log(ChosenReview)
+    // if (ChosenReview.stars == undefined || ChosenReview.stars == undefined) return;
+    console.log("Trying to add a review")
+    console.log(ChosenReview)
+    const NewReview = new ReviewModel(ChosenReview);
+    const campground = await CampGroundModel.findById(req.params.id);
+    campground.reviews.push(NewReview);
+    await NewReview.save();
+    await campground.save();
+    res.redirect(`/camps/${campground._id}`);
+})
+
 // Just for testing - this route will be removed
 app.get("/makecampground/:name", async (req, res) => {
     if (!req.params.name) return;
@@ -98,6 +117,7 @@ app.get("/makecampground/:name", async (req, res) => {
 })
 
 
+
 app.listen(ServerConfig.PORT, () => {
     console.log(`Serving on port ${ServerConfig.PORT}`)
-})
+})  
