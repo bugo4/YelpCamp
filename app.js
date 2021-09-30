@@ -108,6 +108,15 @@ app.post("/camps/:id/reviews", async (req, res) => {
     res.redirect(`/camps/${campground._id}`);
 })
 
+app.delete("/camps/:id/reviews/:reviewId", async (req, res) => {
+    const { id, reviewId } = req.params;
+    console.log("Attempting to delete " + id)
+    const DeletedReview = await ReviewModel.findByIdAndDelete(reviewId)
+    console.log(DeletedReview)
+    res.redirect(`/camps/${id}`)
+})
+
+
 // Just for testing - this route will be removed
 app.get("/makecampground/:name", async (req, res) => {
     if (!req.params.name) return;
