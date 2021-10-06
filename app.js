@@ -28,6 +28,8 @@ db.once("open", () => {
 app.use(express.urlencoded({extended: true}))
 app.use(methodOverride("_method"))
 
+app.use(flash())
+
 const MILI_IN_SECONDS = 1000
 const SECONDS_IN_MIN = 60
 const HOURS_IN_DAY = 24
@@ -141,6 +143,7 @@ app.delete("/camps/:id/reviews/:reviewId", async (req, res) => {
 })
 
 
+
 // Just for testing - this route will be removed
 app.get("/makecampground/:name", async (req, res) => {
     if (!req.params.name) return;
@@ -148,6 +151,32 @@ app.get("/makecampground/:name", async (req, res) => {
     await camp.save()
     res.send(camp)
 })
+
+
+// Authorization
+app.get("/login", (req, res) => {
+    res.render("login.ejs")
+})
+app.post("/login", (req, res) => {
+    const {username, password} = req.body;
+    
+    console.log(`user: ${username}, pass: ${password}`)
+    res.redirect("/camps")
+})
+
+app.get("/register", (req, res) => {
+    res.render("register.ejs")
+})
+
+app.post("/register", (req, res) => {
+    const { username, password } = req.body;
+    
+    console.log(`user: ${username}, pass: ${password}`)
+    
+    res.redirect("/camps")
+})
+
+
 
 
 
