@@ -5,9 +5,13 @@ const app = express()
 const path = require("path")
 const methodOverride = require("method-override")
 
+const session = require("express-session")
+
 const mongoose = require("mongoose")
 const CampGroundModel = require("./models/campground")
 const ReviewModel = require("./models/review")
+
+const flash = require("connect-flash")
 
 mongoose.connect(ServerConfig.mongodb.SERVER_URL, {
     useNewUrlParser: true,
@@ -23,6 +27,26 @@ db.once("open", () => {
 
 app.use(express.urlencoded({extended: true}))
 app.use(methodOverride("_method"))
+
+const MILI_IN_SECONDS = 1000
+const SECONDS_IN_MIN = 60
+const HOURS_IN_DAY = 24
+const DAYS_IN_WEEK = 7
+const DAYS_IN_MONTH = 30
+const MILI_IN_MONTH = MILI_IN_SECONDS * SECONDS_IN_MIN * HOURS_IN_DAY * DAYS_IN_WEEK * DAYS_IN_MONTH
+
+const sessionConfig = {
+    secret: "testyrestyyyyyyyyy!",
+    resave: false,
+    saveUninitialized: true,
+    cookie: {
+        httpOnly: true,
+        expires: Date.now() + MILI_IN_MONTH,
+        maxAge: MILI_IN_MONTH
+    }
+}
+
+app.use(session(sessionConfig))
 
 app.set('view engine', 'ejs')
 app.set('views', path.join(__dirname, 'views'))
