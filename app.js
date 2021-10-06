@@ -9,6 +9,7 @@ const session = require("express-session")
 
 const mongoose = require("mongoose")
 const CampGroundModel = require("./models/campground")
+const UserModel = require("./models/user")
 const ReviewModel = require("./models/review")
 
 const flash = require("connect-flash")
@@ -157,9 +158,15 @@ app.get("/makecampground/:name", async (req, res) => {
 app.get("/login", (req, res) => {
     res.render("login.ejs")
 })
-app.post("/login", (req, res) => {
+app.post("/login", async (req, res) => {
     const {username, password} = req.body;
     
+    const user = await UserModel.doesUserExist(username)
+    console.log(user)
+    if (!user) {
+        return res.redirect("/register")
+    }
+
     console.log(`user: ${username}, pass: ${password}`)
     res.redirect("/camps")
 })
@@ -168,12 +175,16 @@ app.get("/register", (req, res) => {
     res.render("register.ejs")
 })
 
-app.post("/register", (req, res) => {
-    const { username, password } = req.body;
-    
-    console.log(`user: ${username}, pass: ${password}`)
-    
-    res.redirect("/camps")
+app.post("/register", async (req, res) => {
+    const {username, password} = req.body
+    const user = await UserModel.doesUserExist(username)
+    if (!user) {
+        const NewUser = new UserModel({username, password})
+        NewUser.save()
+        console.log(NewUser)
+        return res.redirect("/camps")
+    }
+    res.render("/register")
 })
 
 
