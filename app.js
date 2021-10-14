@@ -105,6 +105,7 @@ app.post("/camps", isLoggedIn, async (req,res) => {
     console.log("Creating new camp:")
     console.log(req.body)
     const newCamp = new CampGroundModel({...req.body})
+    newCamp.author = req.user._id;
     await newCamp.save()
     res.redirect("/camps")
 })
@@ -113,7 +114,7 @@ app.post("/camps", isLoggedIn, async (req,res) => {
 // Get a specific camp - get
 app.get("/camps/:id", isLoggedIn, async (req, res) => {
     const {id} = req.params;
-    const chosenCamp = await CampGroundModel.findOne({_id: id}).populate("reviews")
+    const chosenCamp = await CampGroundModel.findOne({_id: id}).populate("reviews").populate("author")
     console.log(chosenCamp)
     res.render("showCamp", {camp: chosenCamp })
 })
