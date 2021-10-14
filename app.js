@@ -183,11 +183,14 @@ app.get("/login", (req, res) => {
     res.render("login.ejs")
 })
 app.post("/login", passport.authenticate('local', {failureFlash: true, failureRedirect: '/login'}) , async (req, res) => {
+    const ReffererUrl = req.session.refferrerUrl || "/camps"
+    console.log(ReffererUrl)
     const {username, password} = req.body;
     req.flash('success', "welcome back!")
     console.log(`user logged in! :0`)
     console.log(`username: ${username}, password: ${password}`)
-    res.redirect("/camps")
+    delete req.session.refferrerUrl
+    res.redirect(ReffererUrl)
 })
 
 app.get("/register", (req, res) => {
@@ -195,16 +198,18 @@ app.get("/register", (req, res) => {
 })
 
 app.post("/register", async (req, res, next) => {
-    console.log("Hello")
     try {
         const {username, password, email} = req.body
         const user = new UserModel({email, username})
         const registeredUser = await UserModel.register(user, password)
+        const ReffererUrl = req.session.refferrerUrl || "/camps"
         req.login(registeredUser, err => {
             if (err) return next(err)
             req.flash("success", "registered successfully!")
             console.log("registered successfully!")
-            return res.redirect("/camps")    
+            res.redirect(ReffererUrl)    
+            delete req.session.refferrerUrl
+            return;
         })
     } catch(e) {
         req.flash("error", e.message)
