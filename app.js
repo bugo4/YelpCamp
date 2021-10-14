@@ -17,6 +17,8 @@ const flash = require("connect-flash")
 const passport = require("passport")
 const LocalStrategy = require("passport-local") // Save locally
 
+const {isLoggedIn} = require("./utils/middlewares") 
+
 mongoose.connect(ServerConfig.mongodb.SERVER_URL, {
     useNewUrlParser: true,
     useCreateIndex: true,
@@ -85,7 +87,7 @@ app.get("/", (req, res) => {
 
 // get
 // Show all camps
-app.get("/camps", async (req, res) => {
+app.get("/camps", isLoggedIn, async (req, res) => {
     const camps = await CampGroundModel.find({})
     // console.log(camps)
     res.render('camps.ejs', {campgrounds: camps})
@@ -94,12 +96,12 @@ app.get("/camps", async (req, res) => {
 // Create & New
 // New
 // Create new camps page - get
-app.get("/camps/new", async (req, res) => {
+app.get("/camps/new", isLoggedIn, async (req, res) => {
     res.render("newCamp")
 })
 // Create
 // Parse create new campground - post
-app.post("/camps", async (req,res) => {
+app.post("/camps", isLoggedIn, async (req,res) => {
     console.log("Creating new camp:")
     console.log(req.body)
     const newCamp = new CampGroundModel({...req.body})
@@ -109,7 +111,7 @@ app.post("/camps", async (req,res) => {
 
 // Read
 // Get a specific camp - get
-app.get("/camps/:id", async (req, res) => {
+app.get("/camps/:id", isLoggedIn, async (req, res) => {
     const {id} = req.params;
     const chosenCamp = await CampGroundModel.findOne({_id: id}).populate("reviews")
     console.log(chosenCamp)
@@ -119,13 +121,13 @@ app.get("/camps/:id", async (req, res) => {
 // Update & Edit
 // Edit
 // Get the edit form to update a camp
-app.get("/camps/edit/:id", async (req, res) => {
+app.get("/camps/edit/:id", isLoggedIn, async (req, res) => {
     const {id} = req.params;
     const editedCamp = await CampGroundModel.findById(id)
     res.render("editCamp", {camp: editedCamp})
 })
 // Update
-app.put("/camps/edit/:id", async (req, res) => {
+app.put("/camps/edit/:id", isLoggedIn, async (req, res) => {
     const {id} = req.params
     const editedCamp = await CampGroundModel.findByIdAndUpdate(id, {... req.body})
     res.redirect("/camps")
@@ -133,7 +135,7 @@ app.put("/camps/edit/:id", async (req, res) => {
 
 
 // Delete
-app.delete("/camps/:id", async (req, res) => {
+app.delete("/camps/:id", isLoggedIn, async (req, res) => {
     const {id} = req.params
     await CampGroundModel.findByIdAndDelete(id)
     res.redirect("/camps")
@@ -142,7 +144,7 @@ app.delete("/camps/:id", async (req, res) => {
 
 /* Reviews CRUD */
 // Create
-app.post("/camps/:id/reviews", async (req, res) => {
+app.post("/camps/:id/reviews", isLoggedIn, async (req, res) => {
     if (req.body.review == undefined) return;
     const ChosenReview = req.body.review
     console.log(ChosenReview)
@@ -157,7 +159,7 @@ app.post("/camps/:id/reviews", async (req, res) => {
     res.redirect(`/camps/${campground._id}`);
 })
 
-app.delete("/camps/:id/reviews/:reviewId", async (req, res) => {
+app.delete("/camps/:id/reviews/:reviewId", isLoggedIn, async (req, res) => {
     const { id, reviewId } = req.params;
     console.log("Attempting to delete " + id)
     const DeletedReview = await ReviewModel.findByIdAndDelete(reviewId)
