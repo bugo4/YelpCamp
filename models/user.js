@@ -11,6 +11,8 @@ const UserSchema = new Schema({
     }
 })
 // Adds username and passport to User Schema
+// Adds static methods, like:
+// authenticate()
 UserSchema.plugin(passportLocalMongoose)
 
 UserSchema.statics.doesUserExist = async function(username) {

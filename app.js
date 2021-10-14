@@ -14,6 +14,9 @@ const ReviewModel = require("./models/review")
 
 const flash = require("connect-flash")
 
+const passport = require("passport")
+const LocalStrategy = require("passport-local") // Save locally
+
 mongoose.connect(ServerConfig.mongodb.SERVER_URL, {
     useNewUrlParser: true,
     useCreateIndex: true,
@@ -29,7 +32,7 @@ db.once("open", () => {
 app.use(express.urlencoded({extended: true}))
 app.use(methodOverride("_method"))
 
-app.use(flash())
+
 
 const MILI_IN_SECONDS = 1000
 const SECONDS_IN_MIN = 60
@@ -50,6 +53,22 @@ const sessionConfig = {
 }
 
 app.use(session(sessionConfig))
+
+app.use(passport.initialize())
+app.use(passport.session()) // For persistent login interface.
+passport.use(new LocalStrategy(UserModel.authenticate()))
+
+// Store and unstore in session
+passport.serializeUser(UserModel.serializeUser())
+passport.deserializeUser(UserModel.deserializeUser())
+
+
+app.use(flash())
+app.use((req, res, next) => {
+    res.locals.success = req.flash('success')
+    res.locals.error = req.flash('error')
+})
+
 
 app.set('view engine', 'ejs')
 app.set('views', path.join(__dirname, 'views'))
@@ -178,13 +197,13 @@ app.get("/register", (req, res) => {
 app.post("/register", async (req, res) => {
     const {username, password} = req.body
     const user = await UserModel.doesUserExist(username)
-    if (!user) {
-        const NewUser = new UserModel({username, password})
+    if (user) {
+        res.render("/register")        
+    }
+    const NewUser = new UserModel({username, password})
         NewUser.save()
         console.log(NewUser)
         return res.redirect("/camps")
-    }
-    res.render("/register")
 })
 
 
