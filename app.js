@@ -67,6 +67,8 @@ app.use(flash())
 app.use((req, res, next) => {
     res.locals.success = req.flash('success')
     res.locals.error = req.flash('error')
+    console.log(res.locals.success)
+    console.log(res.locals.error)
     next()
 })
 
@@ -85,7 +87,7 @@ app.get("/", (req, res) => {
 // Show all camps
 app.get("/camps", async (req, res) => {
     const camps = await CampGroundModel.find({})
-    console.log(camps)
+    // console.log(camps)
     res.render('camps.ejs', {campgrounds: camps})
 })
 
@@ -196,15 +198,20 @@ app.get("/register", (req, res) => {
 })
 
 app.post("/register", async (req, res) => {
-    const {username, password} = req.body
-    const user = await UserModel.doesUserExist(username)
-    if (user) {
-        res.render("/register")        
+    console.log("Hello")
+    try {
+        const {username, password, email} = req.body
+        const user = new UserModel({email, username})
+        const registeredUser = await UserModel.register(user, password)
+        req.flash("success", "registered successfully!")
+        console.log("registered successfully!")
+        return res.redirect("/camps")    
+    } catch(e) {
+        req.flash("error", e.message)
+        console.log(e.message)
+        res.redirect("/register")
     }
-    const NewUser = new UserModel({username, password})
-        NewUser.save()
-        console.log(NewUser)
-        return res.redirect("/camps")
+    
 })
 
 
