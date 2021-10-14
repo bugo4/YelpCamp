@@ -180,16 +180,11 @@ app.get("/makecampground/:name", async (req, res) => {
 app.get("/login", (req, res) => {
     res.render("login.ejs")
 })
-app.post("/login", async (req, res) => {
+app.post("/login", passport.authenticate('local', {failureFlash: true, failureRedirect: '/login'}) , async (req, res) => {
     const {username, password} = req.body;
-    
-    const user = await UserModel.doesUserExist(username)
-    console.log(user)
-    if (!user) {
-        return res.redirect("/register")
-    }
-
-    console.log(`user: ${username}, pass: ${password}`)
+    req.flash('success', "welcome back!")
+    console.log(`user logged in! :0`)
+    console.log(`username: ${username}, password: ${password}`)
     res.redirect("/camps")
 })
 
