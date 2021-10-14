@@ -211,6 +211,11 @@ app.post("/register", async (req, res) => {
     
 })
 
+app.get("/logout", isLoggedIn, (req, res) => {
+    req.logout()
+    req.flash("success", "logged out... bye bye :(")
+    return res.redirect("/login")
+})
 
 
 
