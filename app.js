@@ -194,15 +194,18 @@ app.get("/register", (req, res) => {
     res.render("register.ejs")
 })
 
-app.post("/register", async (req, res) => {
+app.post("/register", async (req, res, next) => {
     console.log("Hello")
     try {
         const {username, password, email} = req.body
         const user = new UserModel({email, username})
         const registeredUser = await UserModel.register(user, password)
-        req.flash("success", "registered successfully!")
-        console.log("registered successfully!")
-        return res.redirect("/camps")    
+        req.login(registeredUser, err => {
+            if (err) return next(err)
+            req.flash("success", "registered successfully!")
+            console.log("registered successfully!")
+            return res.redirect("/camps")    
+        })
     } catch(e) {
         req.flash("error", e.message)
         console.log(e.message)
