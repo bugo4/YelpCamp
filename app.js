@@ -117,7 +117,11 @@ app.get("/camps/:id", isLoggedIn, async (req, res) => {
     const {id} = req.params;
     const chosenCamp = await CampGroundModel.findOne({_id: id}).populate("reviews").populate("author")
     console.log(chosenCamp)
-    res.render("showCamp", {camp: chosenCamp })
+    if (chosenCamp) {
+        return res.render("showCamp", {camp: chosenCamp })
+    } 
+    console.log(`No camp with the id of ${id} was found...`)
+    return res.redirect("/camps")
 })
 
 // Update & Edit
