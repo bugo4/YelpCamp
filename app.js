@@ -17,7 +17,7 @@ const flash = require("connect-flash")
 const passport = require("passport")
 const LocalStrategy = require("passport-local") // Save locally
 
-const {isLoggedIn} = require("./utils/middlewares") 
+const {isLoggedIn, isAuthor} = require("./utils/middlewares") 
 
 mongoose.connect(ServerConfig.mongodb.SERVER_URL, {
     useNewUrlParser: true,
@@ -123,13 +123,13 @@ app.get("/camps/:id", isLoggedIn, async (req, res) => {
 // Update & Edit
 // Edit
 // Get the edit form to update a camp
-app.get("/camps/edit/:id", isLoggedIn, async (req, res) => {
+app.get("/camps/edit/:id", isLoggedIn, isAuthor, async (req, res) => {
     const {id} = req.params;
     const editedCamp = await CampGroundModel.findById(id)
     res.render("editCamp", {camp: editedCamp})
 })
 // Update
-app.put("/camps/edit/:id", isLoggedIn, async (req, res) => {
+app.put("/camps/edit/:id", isLoggedIn, isAuthor, async (req, res) => {
     const {id} = req.params
     const editedCamp = await CampGroundModel.findByIdAndUpdate(id, {... req.body})
     res.redirect("/camps")
@@ -137,7 +137,7 @@ app.put("/camps/edit/:id", isLoggedIn, async (req, res) => {
 
 
 // Delete
-app.delete("/camps/:id", isLoggedIn, async (req, res) => {
+app.delete("/camps/:id", isLoggedIn, isAuthor, async (req, res) => {
     const {id} = req.params
     await CampGroundModel.findByIdAndDelete(id)
     res.redirect("/camps")
