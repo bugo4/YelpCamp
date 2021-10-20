@@ -10,14 +10,15 @@ const session = require("express-session")
 const mongoose = require("mongoose")
 const CampGroundModel = require("./models/campground")
 const UserModel = require("./models/user")
-const ReviewModel = require("./models/review")
 
 const flash = require("connect-flash")
 
 const passport = require("passport")
 const LocalStrategy = require("passport-local") // Save locally
 
-const {isLoggedIn, isAuthor, isReviewAuthor} = require("./utils/middlewares") 
+const campsRouter = require("./routes/camps")
+const reviewsRouter = require("./routes/reviews")
+const usersRouter = require("./routes/users")
 
 mongoose.connect(ServerConfig.mongodb.SERVER_URL, {
     useNewUrlParser: true,
@@ -33,6 +34,8 @@ db.once("open", () => {
 
 app.use(express.urlencoded({extended: true}))
 app.use(methodOverride("_method"))
+
+
 
 
 
@@ -79,100 +82,17 @@ app.use((req, res, next) => {
 app.set('view engine', 'ejs')
 app.set('views', path.join(__dirname, 'views'))
 
+app.use('/camps', campsRouter)
+app.use('/camps/:id/reviews', reviewsRouter)
+app.use('/', usersRouter)
+
 app.get("/", (req, res) => {
     console.log("Another yelper joined the server")
     res.render("home.ejs")
 })
 
-// Todo: CRUD
-
-// get
-// Show all camps
-app.get("/camps", isLoggedIn, async (req, res) => {
-    const camps = await CampGroundModel.find({})
-    // console.log(camps)
-    res.render('camps.ejs', {campgrounds: camps})
-})
-
-// Create & New
-// New
-// Create new camps page - get
-app.get("/camps/new", isLoggedIn, async (req, res) => {
-    res.render("newCamp")
-})
-// Create
-// Parse create new campground - post
-app.post("/camps", isLoggedIn, async (req,res) => {
-    console.log("Creating new camp:")
-    console.log(req.body)
-    const newCamp = new CampGroundModel({...req.body})
-    newCamp.author = req.user._id;
-    await newCamp.save()
-    res.redirect("/camps")
-})
-
-// Read
-// Get a specific camp - get
-app.get("/camps/:id", isLoggedIn, async (req, res) => {
-    const {id} = req.params;
-    const chosenCamp = await CampGroundModel.findOne({_id: id}).populate("reviews").populate("author")
-    console.log(chosenCamp)
-    if (chosenCamp) {
-        return res.render("showCamp", {camp: chosenCamp })
-    } 
-    console.log(`No camp with the id of ${id} was found...`)
-    return res.redirect("/camps")
-})
-
-// Update & Edit
-// Edit
-// Get the edit form to update a camp
-app.get("/camps/edit/:id", isLoggedIn, isAuthor, async (req, res) => {
-    const {id} = req.params;
-    const editedCamp = await CampGroundModel.findById(id)
-    res.render("editCamp", {camp: editedCamp})
-})
-// Update
-app.put("/camps/edit/:id", isLoggedIn, isAuthor, async (req, res) => {
-    const {id} = req.params
-    const editedCamp = await CampGroundModel.findByIdAndUpdate(id, {... req.body})
-    res.redirect("/camps")
-})
 
 
-// Delete
-app.delete("/camps/:id", isLoggedIn, isAuthor, async (req, res) => {
-    const {id} = req.params
-    await CampGroundModel.findByIdAndDelete(id)
-    res.redirect("/camps")
-})
-
-
-/* Reviews CRUD */
-// Create
-app.post("/camps/:id/reviews", isLoggedIn, async (req, res) => {
-    if (req.body.review == undefined) return;
-    const ChosenReview = req.body.review
-    console.log(ChosenReview)
-    // if (ChosenReview.stars == undefined || ChosenReview.stars == undefined) return;
-    console.log("Trying to add a review")
-    console.log(ChosenReview)
-    const NewReview = new ReviewModel(ChosenReview);
-    NewReview.author = req.user._id
-    const campground = await CampGroundModel.findById(req.params.id);
-    campground.reviews.push(NewReview);
-    await NewReview.save();
-    await campground.save();
-    res.redirect(`/camps/${campground._id}`);
-})
-
-app.delete("/camps/:id/reviews/:reviewId", isLoggedIn, isReviewAuthor, async (req, res) => {
-    const { id, reviewId } = req.params;
-    console.log("Attempting to delete " + id)
-    const DeletedReview = await ReviewModel.findByIdAndDelete(reviewId)
-    console.log(DeletedReview)
-    res.redirect(`/camps/${id}`)
-})
 
 
 
@@ -185,52 +105,6 @@ app.get("/makecampground/:name", async (req, res) => {
 })
 
 
-// Authorization
-app.get("/login", (req, res) => {
-    res.render("login.ejs")
-})
-app.post("/login", passport.authenticate('local', {failureFlash: true, failureRedirect: '/login'}) , async (req, res) => {
-    const ReffererUrl = req.session.refferrerUrl || "/camps"
-    console.log(ReffererUrl)
-    const {username, password} = req.body;
-    req.flash('success', "welcome back!")
-    console.log(`user logged in! :0`)
-    console.log(`username: ${username}, password: ${password}`)
-    delete req.session.refferrerUrl
-    res.redirect(ReffererUrl)
-})
-
-app.get("/register", (req, res) => {
-    res.render("register.ejs")
-})
-
-app.post("/register", async (req, res, next) => {
-    try {
-        const {username, password, email} = req.body
-        const user = new UserModel({email, username})
-        const registeredUser = await UserModel.register(user, password)
-        const ReffererUrl = req.session.refferrerUrl || "/camps"
-        req.login(registeredUser, err => {
-            if (err) return next(err)
-            req.flash("success", "registered successfully!")
-            console.log("registered successfully!")
-            res.redirect(ReffererUrl)    
-            delete req.session.refferrerUrl
-            return;
-        })
-    } catch(e) {
-        req.flash("error", e.message)
-        console.log(e.message)
-        res.redirect("/register")
-    }
-    
-})
-
-app.get("/logout", isLoggedIn, (req, res) => {
-    req.logout()
-    req.flash("success", "logged out... bye bye :(")
-    return res.redirect("/login")
-})
 
 
 
