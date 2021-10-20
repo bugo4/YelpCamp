@@ -18,6 +18,7 @@
         <button>DELETE CAMPGROUND😥</button>
     </form>
     <% } %> 
+    <% if (chosenUser) { %> 
     <!-- Add a review -->
     <h3>
         Add a review!
@@ -32,6 +33,7 @@
         <textarea type="text" id="review[body]" name="review[body]" cols="30" required></textarea>
         <br> <button>Send Review &star;</button>
     </form>
+    <% } %> 
     <h2>
         Reviews from visitors:
     </h2>

@@ -17,7 +17,7 @@ const flash = require("connect-flash")
 const passport = require("passport")
 const LocalStrategy = require("passport-local") // Save locally
 
-const {isLoggedIn, isAuthor} = require("./utils/middlewares") 
+const {isLoggedIn, isAuthor, isReviewAuthor} = require("./utils/middlewares") 
 
 mongoose.connect(ServerConfig.mongodb.SERVER_URL, {
     useNewUrlParser: true,
@@ -158,6 +158,7 @@ app.post("/camps/:id/reviews", isLoggedIn, async (req, res) => {
     console.log("Trying to add a review")
     console.log(ChosenReview)
     const NewReview = new ReviewModel(ChosenReview);
+    NewReview.author = req.user._id
     const campground = await CampGroundModel.findById(req.params.id);
     campground.reviews.push(NewReview);
     await NewReview.save();
@@ -165,7 +166,7 @@ app.post("/camps/:id/reviews", isLoggedIn, async (req, res) => {
     res.redirect(`/camps/${campground._id}`);
 })
 
-app.delete("/camps/:id/reviews/:reviewId", isLoggedIn, async (req, res) => {
+app.delete("/camps/:id/reviews/:reviewId", isLoggedIn, isReviewAuthor, async (req, res) => {
     const { id, reviewId } = req.params;
     console.log("Attempting to delete " + id)
     const DeletedReview = await ReviewModel.findByIdAndDelete(reviewId)

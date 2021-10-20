@@ -1,4 +1,5 @@
 const CampgroundModel = require("../models/campground")
+const Reviewmodel = require("../models/review")
 
 // User middleware
 
@@ -25,7 +26,20 @@ async function isAuthor (req, res, next) {
     next();
 }
 
+async function isReviewAuthor (req, res, next) {
+    const { id, reviewId } = req.params;
+    const review = await Reviewmodel.findById(reviewId)
+    console.log("isReviewAuthor: verifying...")
+    if (!review.author.equals(req.user._id)) {
+        req.flash('error', "You are not the author of the review!")
+        console.log("Not the author of the review...")
+        return res.redirect(`/camps/${id}`)
+    }
+    next();
+}
+
 module.exports.isAuthor = isAuthor 
+module.exports.isReviewAuthor = isReviewAuthor 
 
 
 
