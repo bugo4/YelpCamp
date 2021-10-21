@@ -13,12 +13,6 @@ const {isLoggedIn, isReviewAuthor} = require("../utils/middlewares")
 // Create
 router.post("/", isLoggedIn, reviews.createReview)
 
-router.delete("/:reviewId", isLoggedIn, isReviewAuthor, async (req, res) => {
-    const { id, reviewId } = req.params;
-    console.log("Attempting to delete " + id)
-    const DeletedReview = await ReviewModel.findByIdAndDelete(reviewId)
-    console.log(DeletedReview)
-    res.redirect(`/camps/${id}`)
-})
+router.delete("/:reviewId", isLoggedIn, isReviewAuthor, reviews.deleteReview)
 
 module.exports = router;
