@@ -37,7 +37,12 @@ router.post("/", isLoggedIn, async (req,res) => {
 // Get a specific camp - get
 router.get("/:id", isLoggedIn, async (req, res) => {
     const {id} = req.params;
-    const chosenCamp = await CampGroundModel.findOne({_id: id}).populate("reviews").populate("author")
+    const chosenCamp = await CampGroundModel.findOne({_id: id}).populate({
+        path: "reviews",
+        populate: {
+            path: "author"
+        }
+    }).populate("author")
     console.log(chosenCamp)
     if (chosenCamp) {
         return res.render("showCamp", {camp: chosenCamp })
