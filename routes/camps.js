@@ -10,31 +10,28 @@ const LocalStrategy = require("passport-local") // Save locally
 const campgrounds = require("../controllers/camps")
 
 
-// get
 // Show all camps
-router.get("/", isLoggedIn, campgrounds.index)
+router.route("/")
+    .get(isLoggedIn, campgrounds.index)
+    .post(isLoggedIn, campgrounds.postNewCamp)
 
-// Create & New
 // New
 // Create new camps page - get
 router.get("/new", isLoggedIn, campgrounds.newCampForm)
-// Create
-// Parse create new campground - post
-router.post("/", isLoggedIn, campgrounds.postNewCamp)
 
 // Read
 // Get a specific camp - get
-router.get("/:id", isLoggedIn, campgrounds.getCamp)
+router.route("/:id")
+    .get(isLoggedIn, campgrounds.getCamp)
+    .delete(isLoggedIn, isAuthor, campgrounds.deleteCampground) // Delete
 
 // Update & Edit
 // Edit
 // Get the edit form to update a camp
-router.get("/edit/:id", isLoggedIn, isAuthor, campgrounds.getEditForm)
-// Update
-router.put("/edit/:id", isLoggedIn, isAuthor, campgrounds.updateCampground)
+router.route("/edit/:id")
+    .get(isLoggedIn, isAuthor, campgrounds.getEditForm) // Get the edit camp page
+    .put(isLoggedIn, isAuthor, campgrounds.updateCampground) // Update
 
 
-// Delete
-router.delete("/:id", isLoggedIn, isAuthor, campgrounds.deleteCampground)
 
 module.exports = router;
