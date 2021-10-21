@@ -44,9 +44,11 @@
         <p>
             <%= review.body %>
         </p>
+        <% if (chosenUser && review.author.equals(chosenUser)) { %> 
         <form action="/camps/<%= camp._id %>/reviews/<%= review._id %>/?_method=delete" method="post">
             <button>Delete Review</button>
         </form>
+        <% } %> 
     <% } %>  
 </body>
 </html>
