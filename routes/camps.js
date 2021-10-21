@@ -7,71 +7,34 @@ const {isLoggedIn, isAuthor} = require("../utils/middlewares")
 const passport = require("passport")
 const LocalStrategy = require("passport-local") // Save locally
 
+const campgrounds = require("../controllers/camps")
+
 
 // get
 // Show all camps
-router.get("/", isLoggedIn, async (req, res) => {
-    const camps = await CampGroundModel.find({})
-    // console.log(camps)
-    res.render('camps.ejs', {campgrounds: camps})
-})
+router.get("/", isLoggedIn, campgrounds.index)
 
 // Create & New
 // New
 // Create new camps page - get
-router.get("/new", isLoggedIn, async (req, res) => {
-    res.render("newCamp")
-})
+router.get("/new", isLoggedIn, campgrounds.newCampForm)
 // Create
 // Parse create new campground - post
-router.post("/", isLoggedIn, async (req,res) => {
-    console.log("Creating new camp:")
-    console.log(req.body)
-    const newCamp = new CampGroundModel({...req.body})
-    newCamp.author = req.user._id;
-    await newCamp.save()
-    res.redirect("/camps")
-})
+router.post("/", isLoggedIn, campgrounds.postNewCamp)
 
 // Read
 // Get a specific camp - get
-router.get("/:id", isLoggedIn, async (req, res) => {
-    const {id} = req.params;
-    const chosenCamp = await CampGroundModel.findOne({_id: id}).populate({
-        path: "reviews",
-        populate: {
-            path: "author"
-        }
-    }).populate("author")
-    console.log(chosenCamp)
-    if (chosenCamp) {
-        return res.render("showCamp", {camp: chosenCamp })
-    } 
-    console.log(`No camp with the id of ${id} was found...`)
-    return res.redirect("/camps")
-})
+router.get("/:id", isLoggedIn, campgrounds.getCamp)
 
 // Update & Edit
 // Edit
 // Get the edit form to update a camp
-router.get("/edit/:id", isLoggedIn, isAuthor, async (req, res) => {
-    const {id} = req.params;
-    const editedCamp = await CampGroundModel.findById(id)
-    res.render("editCamp", {camp: editedCamp})
-})
+router.get("/edit/:id", isLoggedIn, isAuthor, campgrounds.getEditForm)
 // Update
-router.put("/edit/:id", isLoggedIn, isAuthor, async (req, res) => {
-    const {id} = req.params
-    const editedCamp = await CampGroundModel.findByIdAndUpdate(id, {... req.body})
-    res.redirect("/camps")
-})
+router.put("/edit/:id", isLoggedIn, isAuthor, campgrounds.updateCampground)
 
 
 // Delete
-router.delete("/:id", isLoggedIn, isAuthor, async (req, res) => {
-    const {id} = req.params
-    await CampGroundModel.findByIdAndDelete(id)
-    res.redirect("/camps")
-})
+router.delete("/:id", isLoggedIn, isAuthor, campgrounds.deleteCampground)
 
 module.exports = router;
