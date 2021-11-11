@@ -7,6 +7,10 @@ const methodOverride = require("method-override")
 
 const session = require("express-session")
 
+const { MongoStore } = require('connect-mongo');
+
+const MongoDBStore = require('connect-mongo')(session);
+
 const mongoose = require("mongoose")
 const CampGroundModel = require("./models/campground")
 const UserModel = require("./models/user")
@@ -20,7 +24,9 @@ const campsRouter = require("./routes/camps")
 const reviewsRouter = require("./routes/reviews")
 const usersRouter = require("./routes/users")
 
-mongoose.connect(ServerConfig.mongodb.SERVER_URL, {
+const MongoDBUrl = ServerConfig.mongodb.SERVER_URL
+
+mongoose.connect(MongoDBUrl, {
     useNewUrlParser: true,
     useCreateIndex: true,
     useUnifiedTopology: true
@@ -41,12 +47,24 @@ app.use(methodOverride("_method"))
 
 const MILI_IN_SECONDS = 1000
 const SECONDS_IN_MIN = 60
+const MIN_IN_HOURS = 60
 const HOURS_IN_DAY = 24
 const DAYS_IN_WEEK = 7
 const DAYS_IN_MONTH = 30
 const MILI_IN_MONTH = MILI_IN_SECONDS * SECONDS_IN_MIN * HOURS_IN_DAY * DAYS_IN_WEEK * DAYS_IN_MONTH
 
+const store = new MongoDBStore({
+    url: MongoDBUrl,
+    secret: "DevSecretPass",
+    touchAfter: SECONDS_IN_MIN * MIN_IN_HOURS * HOURS_IN_DAY
+})
+
+store.on("error", err => {
+    console.log("Error occurred on connecting to mongodb store", err)
+})
+
 const sessionConfig = {
+    store,
     secret: "testyrestyyyyyyyyy!",
     resave: false,
     saveUninitialized: true,
