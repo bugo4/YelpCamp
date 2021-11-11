@@ -1,3 +1,7 @@
+if (process.env.NODE_ENV !== "production") {
+    require('dotenv').config();
+}
+
 const ServerConfig = require("./server_config.json")
 
 const express = require("express")
@@ -24,7 +28,8 @@ const campsRouter = require("./routes/camps")
 const reviewsRouter = require("./routes/reviews")
 const usersRouter = require("./routes/users")
 
-const MongoDBUrl = ServerConfig.mongodb.SERVER_URL
+const MongoDBUrl = process.env.MONGODB_SERVER_URL || ServerConfig.mongodb.SERVER_URL
+const ListeningPort = process.env.LISTENING_PORT || ServerConfig.PORT
 
 mongoose.connect(MongoDBUrl, {
     useNewUrlParser: true,
@@ -122,11 +127,6 @@ app.get("/makecampground/:name", async (req, res) => {
     res.send(camp)
 })
 
-
-
-
-
-
-app.listen(ServerConfig.PORT, () => {
+app.listen(ListeningPort, () => {
     console.log(`Serving on port ${ServerConfig.PORT}`)
 })  
